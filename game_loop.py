@@ -2,6 +2,7 @@ import ctypes
 import cfg
 from os import chdir
 import entities
+import player_input as pinput
 import pygame as pg
 pg.init()
 
@@ -26,31 +27,42 @@ enemy2 = entities.Enemy(50, 100, cfg.FLOOR)
 continue_loop = True
 while continue_loop:
 
+    for event in pg.event.get():
+        if event.type == pg.QUIT:
+            exit()
+
+    # draw stuff
     main_surf.fill("BLACK")
+    player_surf.fill("GREEN")
+    main_surf.blit(player_surf, (player.x_pos, player.y_pos))
+
     for enemy in entities.Enemy.existing_enemies:
         enemy.surface.fill("RED")
         main_surf.blit(enemy.surface, (enemy.x_pos, enemy.y_pos))
 
-    player_surf.fill("GREEN")
-    main_surf.blit(player_surf, (player.x_pos, player.y_pos))
-
     pg.display.flip()
 
-    # TODO: refactor collisions and separate controller
-    pressed_keys = pg.key.get_pressed()
-    if pressed_keys[pg.K_LEFT]:
-        if not player.will_collide(-10):
-            player.x_pos -= 15
-        else:
-            player.x_pos += player.get_distance_to(enemy2)
-    elif pressed_keys[pg.K_RIGHT]:
-        if not player.will_collide(10):
-            player.x_pos += 15
-        else:
-            player.x_pos += player.get_distance_to(enemy1)
-
-    for event in pg.event.get():
-        if event.type == pg.QUIT:
-            continue_loop = False
+    # movement logic
+    move_distance = pinput.get_distance_from_keys_pressed()
+    collision_cause = player.seek_possible_collision(move_distance)
+    if collision_cause is None:
+        player.x_pos += move_distance
+    else:
+        player.x_pos += player.get_distance_to(collision_cause)
 
     clock.tick(cfg.FPS)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

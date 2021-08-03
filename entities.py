@@ -29,13 +29,13 @@ class Movable:
             return True
         return False
 
-    def will_collide(self, step):
+    def seek_possible_collision(self, step):
         for target in Enemy.existing_enemies:
             if step > 0 and self.x_pos < target.x_pos <= self.x_pos + self.width + step:
-                return True
+                return target
             if step < 0 and target.x_pos < self.x_pos <= target.x_pos + target.width - step:
-                return True
-        return False
+                return target
+        return None
 
     def get_distance_to(self, target):
         if self.x_pos < target.x_pos:
