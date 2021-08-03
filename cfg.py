@@ -1,0 +1,7 @@
+import os
+
+FPS = 60
+FLOOR = 250
+FULL_HP = 100
+ENEMY_SIZE = 50
+MOVE_SPEED = 15
