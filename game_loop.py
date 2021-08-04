@@ -14,12 +14,12 @@ screen_size = user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)
 pg.display.set_caption("scaffolding")
 pg.display.set_icon(pg.image.load("icon.bmp"))
 
-main_surf = pg.display.set_mode((600, 400))
-player_surf = pg.Surface((50, 50))
+main_surf = pg.display.set_mode((cfg.DISPLAY_X, cfg.DISPLAY_Y))
+# player_surf = pg.Surface((50, 50))
 
 clock = pg.time.Clock()
 
-player = entities.Movable(200, cfg.FLOOR)
+player = entities.Player(200, cfg.FLOOR)
 enemy1 = entities.Enemy(50, 450, cfg.FLOOR)
 enemy2 = entities.Enemy(50, 100, cfg.FLOOR)
 
@@ -28,41 +28,27 @@ continue_loop = True
 while continue_loop:
 
     for event in pg.event.get():
+        if event.type == pg.KEYDOWN and event.key == pg.K_x and enemy1 in entities.Enemy.existing_enemies:
+            enemy1.die()
         if event.type == pg.QUIT:
             exit()
 
-    # draw stuff
+    # render stuff
     main_surf.fill("BLACK")
-    player_surf.fill("GREEN")
-    main_surf.blit(player_surf, (player.x_pos, player.y_pos))
-
-    for enemy in entities.Enemy.existing_enemies:
-        enemy.surface.fill("RED")
-        main_surf.blit(enemy.surface, (enemy.x_pos, enemy.y_pos))
-
+    for entity in entities.Living.entities_list:
+        entity.surface.fill(entity.color)
+        main_surf.blit(entity.surface, (entity.x_pos, entity.y_pos))
     pg.display.flip()
 
     # movement logic
-    move_distance = pinput.get_distance_from_keys_pressed()
-    collision_cause = player.seek_possible_collision(move_distance)
+    move_vector = pinput.get_distance_from_keys_pressed()
+    player.set_direction(move_vector)
+
+    collision_cause = player.seek_possible_collision(move_vector)
     if collision_cause is None:
-        player.x_pos += move_distance
+        player.x_pos += move_vector
     else:
         player.x_pos += player.get_distance_to(collision_cause)
 
     clock.tick(cfg.FPS)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

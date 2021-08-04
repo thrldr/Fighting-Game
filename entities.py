@@ -7,12 +7,23 @@ class Movable:
     y_pos = 0
     width = 50
     height = 50
+    direction = "CENTER"  # supported directions: LEFT, RIGHT, CENTER
+
+    def get_direction(self):
+        return self.direction
+
+    def set_direction(self, vector):
+        if vector > 0:
+            self.direction = "LEFT"
+        elif vector < 0:
+            self.direction = "RIGHT"
 
     def __init__(self, x=100, y=cfg.FLOOR, w=50, h=50):
         self.x_pos = x
         self.y_pos = y
         self.width = w
         self.height = h
+        self.direction = "CENTER"
 
     def get_pos(self):
         return self.x_pos, self.y_pos
@@ -44,13 +55,42 @@ class Movable:
             return target.x_pos + target.width - self.x_pos
 
 
-class Enemy(Movable):
-    existing_enemies = list()
+class Living(Movable):
+    entities_list = list()
     HP = cfg.FULL_HP
     surface = pg.Surface((50, 50))
 
-    def __init__(self, size=cfg.ENEMY_SIZE, *args):
+    def die(self):
+        print(Living.entities_list)
+        if self in Living.entities_list:
+            Living.entities_list.remove(self)
+        del self
+
+    def __init__(self, size=cfg.ENEMY_SIZE, *args, hp=100):
         Movable.__init__(self, *args)
-        Enemy.existing_enemies.append(self)
+        self.HP = hp
+        Living.entities_list.append(self)
         surface = pg.Surface((size, size))
+
+
+class Player(Living):
+    color = "GREEN"
+
+    def __init__(self, *args):
+        Living.__init__(self, *args)
+
+
+class Enemy(Living):
+    color = "RED"
+    existing_enemies = list()
+
+    def die(self):
+        Enemy.existing_enemies.remove(self)
+        del self
+
+    def __init__(self, *args):
+        Living.__init__(self, *args)
+        Enemy.existing_enemies.append(self)
+
+
 

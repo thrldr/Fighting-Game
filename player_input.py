@@ -1,6 +1,7 @@
 import pygame as pg
 import cfg
 
+
 def get_distance_from_keys_pressed():
     pressed_keys = pg.key.get_pressed()
     if pressed_keys[pg.K_LEFT]:
