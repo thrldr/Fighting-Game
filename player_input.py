@@ -1,5 +1,14 @@
 import pygame as pg
+import entities
 import cfg
+
+
+def input_placeholder(*args):
+    for event in pg.event.get():
+        if event.type == pg.KEYDOWN and event.key == pg.K_x:
+            args[0].shoot()
+        if event.type == pg.QUIT:
+            exit()
 
 
 def get_distance_from_keys_pressed():

@@ -3,27 +3,23 @@ import pygame as pg
 
 
 class Movable:
-    x_pos = 0
-    y_pos = 0
-    width = 50
-    height = 50
-    direction = "CENTER"  # supported directions: LEFT, RIGHT, CENTER
+    def __init__(self, x, y, w=50, h=50, color="YELLOW"):
+        self.x_pos = x
+        self.y_pos = y
+        self.width = w
+        self.height = h
+        self.direction = "RIGHT"
+        self.surface = pg.Surface((w, h))
+        self.color = color
 
     def get_direction(self):
         return self.direction
 
     def set_direction(self, vector):
-        if vector > 0:
+        if vector < 0:
             self.direction = "LEFT"
-        elif vector < 0:
+        elif vector > 0:
             self.direction = "RIGHT"
-
-    def __init__(self, x=100, y=cfg.FLOOR, w=50, h=50):
-        self.x_pos = x
-        self.y_pos = y
-        self.width = w
-        self.height = h
-        self.direction = "CENTER"
 
     def get_pos(self):
         return self.x_pos, self.y_pos
@@ -32,7 +28,7 @@ class Movable:
         self.x_pos = x
         self.y_pos = y
 
-    def does_collide(self, target):
+    def is_collided(self, target):
         if self.x_pos >= target.x_pos:
             if target.x_pos + target.width >= self.x_pos:
                 return True
@@ -57,8 +53,11 @@ class Movable:
 
 class Living(Movable):
     entities_list = list()
-    HP = cfg.FULL_HP
-    surface = pg.Surface((50, 50))
+
+    def __init__(self, *args, hp=100, **kwargs):
+        Movable.__init__(self, *args, **kwargs)
+        self.HP = hp
+        Living.entities_list.append(self)
 
     def die(self):
         print(Living.entities_list)
@@ -66,31 +65,57 @@ class Living(Movable):
             Living.entities_list.remove(self)
         del self
 
-    def __init__(self, size=cfg.ENEMY_SIZE, *args, hp=100):
-        Movable.__init__(self, *args)
-        self.HP = hp
-        Living.entities_list.append(self)
-        surface = pg.Surface((size, size))
-
 
 class Player(Living):
-    color = "GREEN"
+    is_dead = False
 
-    def __init__(self, *args):
-        Living.__init__(self, *args)
+    def __init__(self, *args, color="GREEN"):
+        Living.__init__(self, *args, color=color)
+
+    def calculate_projectile_starting_point(self):
+        if self.direction == "LEFT":
+            return self.x_pos - cfg.PROJECTILE_WIDTH, self.y_pos + 15
+        else:
+            return self.x_pos + self.width, self.y_pos + 15
+
+    def shoot(self):
+        starting_point = self.calculate_projectile_starting_point()
+        Projectile(self.direction, *starting_point)
 
 
 class Enemy(Living):
-    color = "RED"
     existing_enemies = list()
 
-    def die(self):
-        Enemy.existing_enemies.remove(self)
-        del self
-
-    def __init__(self, *args):
-        Living.__init__(self, *args)
+    def __init__(self, *args, color="RED"):
+        Living.__init__(self, *args, color=color)
         Enemy.existing_enemies.append(self)
 
+    def rush(self, player):
+        if self.x_pos < player.x_pos:
+            self.x_pos += cfg.ENEMY_SPEED
+        else:
+            self.x_pos += -cfg.ENEMY_SPEED
+
+    def die(self):
+        if self in Living.entities_list:
+            Living.entities_list.remove(self)
+            Enemy.existing_enemies.remove(self)
+        del self
 
 
+class Projectile(Movable):
+    existing_projectiles = list()
+    surface = pg.Surface((cfg.PROJECTILE_WIDTH, cfg.PROJECTILE_HEIGHT))
+
+    def __init__(self, direction, x, y, proj_with=cfg.PROJECTILE_WIDTH, proj_height=cfg.PROJECTILE_HEIGHT):
+        Movable.__init__(self, x, y, proj_with, proj_height)
+        self.direction = direction
+        Projectile.existing_projectiles.append(self)
+
+    def out_of_display(self):
+        return self.x_pos < 0 or self.x_pos > cfg.DISPLAY_X
+
+    def die(self):
+        if self in Projectile.existing_projectiles:
+            Projectile.existing_projectiles.remove(self)
+        del self
