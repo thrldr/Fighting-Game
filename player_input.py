@@ -1,14 +1,17 @@
 import pygame as pg
-import entities
+import game_cycle
 import cfg
 
 
-def input_placeholder(*args):
+def input_placeholder(player):
     for event in pg.event.get():
         if event.type == pg.KEYDOWN and event.key == pg.K_x:
-            args[0].shoot()
+            player.shoot()
+        if event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE:
+            return False
         if event.type == pg.QUIT:
             exit()
+    return True
 
 
 def get_distance_from_keys_pressed():

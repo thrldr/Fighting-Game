@@ -60,7 +60,6 @@ class Living(Movable):
         Living.entities_list.append(self)
 
     def die(self):
-        print(Living.entities_list)
         if self in Living.entities_list:
             Living.entities_list.remove(self)
         del self
@@ -68,6 +67,10 @@ class Living(Movable):
 
 class Player(Living):
     is_dead = False
+
+    def die(self):
+        self.is_dead = True
+        Living.die(self)
 
     def __init__(self, *args, color="GREEN"):
         Living.__init__(self, *args, color=color)
