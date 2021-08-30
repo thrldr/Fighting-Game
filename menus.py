@@ -1,6 +1,6 @@
 import cfg
 import pygame as pg
-import game_cycle as gc
+import game_states as gc
 
 
 class Menu_Bar:
@@ -27,39 +27,39 @@ class Menu_Bar:
 
 
 class Menu_Logic:
-    def __init__(self, *args, pos=0):
+    def __init__(self, *args, active_bar_position=0):
         self.bars = list()
         self.font = pg.font.SysFont('Impact', 40)
         for arg in args:
             self.bars.append(Menu_Bar(arg))
         self.bars[0].activate()
-        self.pos = pos
+        self.active_bar_position = active_bar_position
 
     def get_current_bar(self):
-        return self.bars[self.pos]
+        return self.bars[self.active_bar_position]
 
     def go_to_next_bar(self):
-        self.bars[self.pos].deactivate()
-        if self.pos + 1 == len(self.bars):
+        self.bars[self.active_bar_position].deactivate()
+        if self.active_bar_position + 1 == len(self.bars):
             self.bars[0].activate()
-            self.pos = 0
+            self.active_bar_position = 0
         else:
-            self.bars[self.pos + 1].activate()
-            self.pos += 1
+            self.bars[self.active_bar_position + 1].activate()
+            self.active_bar_position += 1
 
     def go_to_previous_bar(self):
-        self.bars[self.pos].deactivate()
-        if self.pos - 1 < 0:
+        self.bars[self.active_bar_position].deactivate()
+        if self.active_bar_position - 1 < 0:
             self.bars[len(self.bars) - 1].activate()
-            self.pos = len(self.bars) - 1
+            self.active_bar_position = len(self.bars) - 1
         else:
-            self.bars[self.pos - 1].activate()
-            self.pos -= 1
+            self.bars[self.active_bar_position - 1].activate()
+            self.active_bar_position -= 1
 
 
 class Menu_Renderer(Menu_Logic):
-    def __init__(self, *args, pos=0):
-        Menu_Logic.__init__(self, *args, pos=0)
+    def __init__(self, *args, active_bar_position=0):
+        Menu_Logic.__init__(self, *args, active_bar_position=0)
 
     def show_on(self, surface):
         surface.fill(cfg.BG_COLOR)
@@ -79,12 +79,11 @@ class Menu_Renderer(Menu_Logic):
             self.go_to_previous_bar()
 
         if event.type == pg.KEYDOWN and event.key == pg.K_RETURN:
-            for bar in self.bars:
-                if bar.is_active():
-                    if bar.get_name() == "Exit":
-                        exit()
-                    elif bar.get_name() == "New Game":
-                        processor.can_continue = False
-                        processor.continue_loop = False
-                    elif bar.get_name() == "Continue":
-                        processor.continue_loop = False
+            if self.bars[self.active_bar_position].get_name() == "Exit":
+                exit()
+            elif self.bars[self.active_bar_position].get_name() == "New Game":
+                processor.can_continue = False
+                processor.continue_loop = False
+            elif self.bars[self.active_bar_position].get_name() == "Continue":
+                processor.continue_loop = False
+

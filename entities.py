@@ -68,18 +68,27 @@ class Living(Movable):
 class Player(Living):
     is_dead = False
 
+    def jump(self):
+        self.jump_buffer = self.y_pos
+
     def die(self):
         self.is_dead = True
         Living.die(self)
 
     def __init__(self, *args, color="GREEN"):
         Living.__init__(self, *args, color=color)
+        self.direction = "RIGHT"
+        self.jump_buffer = cfg.FLOOR
 
     def calculate_projectile_starting_point(self):
         if self.direction == "LEFT":
             return self.x_pos - cfg.PROJECTILE_WIDTH, self.y_pos + 15
         else:
             return self.x_pos + self.width, self.y_pos + 15
+
+    def hit(self):
+        starting_point = self.calculate_projectile_starting_point()
+        Limb(self.direction, *starting_point)
 
     def shoot(self):
         starting_point = self.calculate_projectile_starting_point()
@@ -104,6 +113,20 @@ class Enemy(Living):
             Living.entities_list.remove(self)
             Enemy.existing_enemies.remove(self)
         del self
+
+
+class Limb(Movable):
+    instance = None
+
+    def __init__(self, direction, x, y, proj_with=cfg.PROJECTILE_WIDTH, proj_height=cfg.PROJECTILE_HEIGHT):
+        instance = self
+        Movable.__init__(self, x, y, proj_with, proj_height)
+        self.direction = direction
+
+    def die(self):
+        if Limb.instance is not None:
+            Limb.instance = None
+            del self
 
 
 class Projectile(Movable):

@@ -1,5 +1,5 @@
 import pygame as pg
-import game_cycle
+import game_states
 import cfg
 
 
