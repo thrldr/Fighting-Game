@@ -11,7 +11,6 @@ class Game_Processor:
         self.state = state
         self.clock = pg.time.Clock()
         self.main_surface = pg.display.set_mode((cfg.DISPLAY_X, cfg.DISPLAY_Y))
-
         self.win = False
 
     @staticmethod

@@ -11,103 +11,38 @@ from enemy_spawn import clear_board
 
 def start_game_cycle(processor):
     # creating player
-    for entity in entities.Living.entities_list:
-        if isinstance(entity, entities.Player):
-            player = entity
-    if not processor.can_continue:
-        clear_board()
-        player = entities.Player(cfg.DISPLAY_X * 0.25, cfg.FLOOR, *cfg.FIGHTER_SIZE)
-        enemy = entities.Enemy(cfg.DISPLAY_X * 0.75 - 100, cfg.FLOOR, *cfg.FIGHTER_SIZE)
+    # for entity in entities.Living.entities_list:
+    #     if isinstance(entity, entities.Player):
+    #         player = entity
+    #     else:
+    #         enemy = entity
+    # if not processor.can_continue:
+    #     clear_board()
+    #     player = entities.Player(cfg.DISPLAY_X * 0.25, cfg.FLOOR, *cfg.FIGHTER_SIZE)
+    #     enemy = entities.Enemy(cfg.DISPLAY_X * 0.75 - 100, cfg.FLOOR, *cfg.FIGHTER_SIZE)
 
-    h = 0
-    h_e = 0
-    processor.set_state("defeat")
-    hitting = False
-    e_hitting = False
-    enemy_moves = False
-    enemy_vector = 0
+    player = entities.Movable((cfg.DISPLAY_X // 4.5, cfg.FLOOR), sprite="stance.png")
+    player.image.set_colorkey("WHITE")
+    player_group = pg.sprite.Group()
+    player_group.add(player)
 
     while processor.continue_loop:
+        # CONTROLS
         for event in pg.event.get():
+            if event.type == pg.KEYDOWN and event.key == pg.K_x:
+                player.kill()
+                del player
             if event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE:
                 processor.pause_game()
-            if event.type == pg.KEYDOWN and event.key == pg.K_x:
-                hitting = True
             if event.type == pg.QUIT:
                 exit()
 
-        # render stuff
-        processor.main_surface.fill("BLACK")
-        for entity in entities.Living.entities_list:
-            entity.surface.fill(entity.color)
-            processor.main_surface.blit(entity.surface, (entity.x_pos, entity.y_pos))
-
-        # movement logic
-        # player movement
-
-        #
-        #   TODO: IMPLEMENT SIMPLER CURVES
-        #
-
-        if hitting:
-            hand = pg.Surface((curves.hitting_curve(h), 20))
-            hand.fill("GREEN")
-            if pg.Rect((player.x_pos + player.width, cfg.FLOOR + 50, curves.hitting_curve(h), 20)).colliderect(pg.Rect((enemy.x_pos, enemy.y_pos, *cfg.FIGHTER_SIZE))):
-                enemy.HP -= 25
-                if enemy.HP <= 0:
-                    processor.continue_loop = False
-                    processor.set_state("victory")
-                h = 15
-            processor.main_surface.blit(hand, (player.x_pos + player.width, cfg.FLOOR + 50))
-            h += 1
-            if h > 14:
-                hitting = False
-                h = 0
-
-        if random.randint(0, 50) == 10:
-            e_hitting = True
-
-        if e_hitting:
-            e_hand = pg.Surface((curves.hitting_curve(h_e), 20))
-            e_hand.fill("RED")
-            if pg.Rect((enemy.x_pos - curves.hitting_curve(h_e), cfg.FLOOR + 40, curves.hitting_curve(h_e), 20)).colliderect(pg.Rect((player.x_pos, player.y_pos, *cfg.FIGHTER_SIZE))):
-                player.HP -= 25
-                if player.HP <= 0:
-                    processor.continue_loop = False
-                    processor.set_state("defeat")
-                h_e = 15
-            processor.main_surface.blit(e_hand, (enemy.x_pos - curves.hitting_curve(h_e), cfg.FLOOR + 40))
-            h_e += 1
-            if h_e > 14:
-                e_hitting = False
-                h_e = 0
-
-        move_vector = pinput.get_distance_from_keys_pressed()
-        player.set_direction(move_vector)
-
-        collision_cause = player.seek_possible_collision(move_vector)
-        if collision_cause is None:
-            player.x_pos += move_vector
-        else:
-            player.x_pos += player.get_distance_to(collision_cause)
-
-        if not enemy_moves:
-            enemy_movement_time = random.randint(5, 20)
-            enemy_vector = random.randint(-1, 1)
-            enemy_moves = True
-        else:
-            if enemy_movement_time > 0:
-                enemy_movement_time -= 1
-            else:
-                enemy_moves = False
-            if enemy.x_pos + enemy.width + cfg.MOVE_SPEED > cfg.DISPLAY_X:
-                enemy_vector *= -1
-            enemy.x_pos += enemy_vector * cfg.MOVE_SPEED
+        player_group.update(pinput.get_distance_from_keys_pressed())
+        processor.main_surface.fill("YELLOW")
+        player_group.draw(processor.main_surface)
 
         processor.clock.tick(cfg.FPS)
-
-        UI.draw_hp(processor.main_surface, player.HP, enemy.HP)
-        pg.display.flip()
+        pg.display.update(pg.Rect(0, cfg.FLOOR // 2.2, cfg.DISPLAY_X, cfg.FLOOR / 1.5))
     processor.continue_loop = True
 
 
