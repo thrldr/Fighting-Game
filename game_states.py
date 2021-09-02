@@ -1,5 +1,6 @@
+from pygame.surface import Surface
+
 import cfg
-import animation_curves as curves
 import entities
 import player_input as pinput
 import pygame as pg
@@ -10,39 +11,32 @@ from enemy_spawn import clear_board
 
 
 def start_game_cycle(processor):
-    # creating player
-    # for entity in entities.Living.entities_list:
-    #     if isinstance(entity, entities.Player):
-    #         player = entity
-    #     else:
-    #         enemy = entity
-    # if not processor.can_continue:
-    #     clear_board()
-    #     player = entities.Player(cfg.DISPLAY_X * 0.25, cfg.FLOOR, *cfg.FIGHTER_SIZE)
-    #     enemy = entities.Enemy(cfg.DISPLAY_X * 0.75 - 100, cfg.FLOOR, *cfg.FIGHTER_SIZE)
 
-    player = entities.Movable((cfg.DISPLAY_X // 4.5, cfg.FLOOR), sprite="stance.png")
-    player.image.set_colorkey("WHITE")
-    player_group = pg.sprite.Group()
-    player_group.add(player)
+    if not processor.can_continue:
+        player = entities.Living((cfg.DISPLAY_X // 4.5, cfg.FLOOR), sprite="right_stance.png")
+        player.image.set_colorkey("WHITE")
+        player_group = pg.sprite.Group()
+        player_group.add(player)
+        controller = pinput.Controller(player, processor)
+
+    background_shape = pg.surface.Surface((cfg.DISPLAY_X, cfg.FLOOR // 1.5))
+
+    background_shape.fill("YELLOW")
+    processor.main_surface.fill("BLACK")
+    pg.display.update()
 
     while processor.continue_loop:
-        # CONTROLS
-        for event in pg.event.get():
-            if event.type == pg.KEYDOWN and event.key == pg.K_x:
-                player.kill()
-                del player
-            if event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE:
-                processor.pause_game()
-            if event.type == pg.QUIT:
-                exit()
 
-        player_group.update(pinput.get_distance_from_keys_pressed())
-        processor.main_surface.fill("YELLOW")
+        processor.main_surface.fill("BLACK")
+        processor.main_surface.blit(background_shape, (0, cfg.FLOOR // 2.2))
+        UI.draw_text(processor.main_surface, player.is_dashing, player.dash_timer)
+
+        controller.handle_events()
+        player_group.update()
         player_group.draw(processor.main_surface)
 
         processor.clock.tick(cfg.FPS)
-        pg.display.update(pg.Rect(0, cfg.FLOOR // 2.2, cfg.DISPLAY_X, cfg.FLOOR / 1.5))
+        pg.display.update()
     processor.continue_loop = True
 
 

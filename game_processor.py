@@ -40,7 +40,3 @@ class Game_Processor:
         self.win = win
         Game_Processor.check_if_valid_state(state)
         self.state = state
-
-
-
-

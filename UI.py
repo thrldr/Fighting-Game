@@ -2,16 +2,19 @@ import cfg
 import pygame as pg
 
 
-def draw_hp(surface, player_hp, enemy_hp):
+def draw_text(surface, *args):
     small_impact_font = pg.font.SysFont('Arial', 60)
 
-    player_hp_text = small_impact_font.render(str(player_hp), 1, "WHITE")
-    player_hp_pos = player_hp_text.get_rect(topleft=(100, 40))
+    text = ''
+    for arg in args:
+        text += str(arg) + '        '
+    player_hp_text = small_impact_font.render(str(text), 1, "WHITE")
+    player_hp_pos = player_hp_text.get_rect(topleft=(100, cfg.FLOOR // 3.1))
     surface.blit(player_hp_text, player_hp_pos)
 
-    enemy_hp_text = small_impact_font.render(str(enemy_hp), 1, "WHITE")
-    enemy_hp_pos = enemy_hp_text.get_rect(topright=(cfg.DISPLAY_X - 100, 40))
-    surface.blit(enemy_hp_text, enemy_hp_pos)
+    # enemy_hp_text = small_impact_font.render(str(enemy_hp), 1, "WHITE")
+    # enemy_hp_pos = enemy_hp_text.get_rect(topright=(cfg.DISPLAY_X - 100, 40))
+    # surface.blit(enemy_hp_text, enemy_hp_pos)
 
 
 def draw_fighting_image_on(surface):

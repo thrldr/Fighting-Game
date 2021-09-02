@@ -9,4 +9,3 @@ pg.display.set_icon(pg.image.load("resources/icon.bmp"))
 game = Game_Processor(state="gameplay")
 while True:
     game.handle_state()
-
