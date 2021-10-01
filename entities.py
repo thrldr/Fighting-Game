@@ -35,11 +35,6 @@ class Movable(pg.sprite.Sprite):
         self.rect.x += self.movement_vector
 
 
-class Status:
-    def __init__(self, name):
-        self.name = name
-
-
 class Living(Movable):
     def __init__(self, *args, hp=cfg.FULL_HP, **kwargs):
         super(Living, self).__init__(*args, **kwargs)
