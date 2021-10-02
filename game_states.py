@@ -1,4 +1,4 @@
-import cfg
+import constants as cfg
 import entities
 import player_input as pinput
 import pygame as pg

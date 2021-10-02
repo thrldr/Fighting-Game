@@ -1,5 +1,5 @@
 import pygame as pg
-import cfg
+import constants as cfg
 
 
 class Animation:

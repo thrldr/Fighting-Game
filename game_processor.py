@@ -1,6 +1,6 @@
 import game_states as gc
 import pygame as pg
-import cfg
+import constants as cfg
 
 
 class Game_Processor:

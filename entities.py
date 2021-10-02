@@ -1,8 +1,8 @@
-import cfg
+import constants as cfg
 import pygame as pg
 import UI
 from renderer import Renderer
-from cfg import State
+from constants import State
 
 
 class Movable(pg.sprite.Sprite):

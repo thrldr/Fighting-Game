@@ -1,4 +1,4 @@
-import cfg
+import constants as cfg
 import pygame as pg
 import game_states as gc
 

@@ -6,6 +6,6 @@ pg.init()
 pg.display.set_caption("super game")
 pg.display.set_icon(pg.image.load("resources/icon.bmp"))
 
-game = Game_Processor(state="gameplay")
+game = Game_Processor(state="main_menu")
 while True:
     game.handle_state()

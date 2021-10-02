@@ -1,5 +1,5 @@
 import UI
-import cfg
+import constants as cfg
 from animations import Animation
 
 

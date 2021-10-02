@@ -1,6 +1,6 @@
 import pygame as pg
-import cfg
-from cfg import State
+import constants as cfg
+from constants import State
 
 
 class Controller:
