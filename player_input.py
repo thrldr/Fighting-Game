@@ -1,22 +1,22 @@
 import pygame as pg
-import game_states
 import cfg
+from cfg import State
 
 
 class Controller:
     def __init__(self, controllable, processor):
         self.puppet = controllable
         self.processor = processor
-        self.can_double_tap = False
+        self.key_buffer = None
 
     def check_double_tap(self):
         pass
 
     def handle_events(self):
         if self.puppet is None:
-            raise AttributeError
+            raise AttributeError("Controller has no puppet")
 
-        # single keys
+        # tapped keys
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 exit()
@@ -25,41 +25,53 @@ class Controller:
                 if event.key == pg.K_ESCAPE:
                     self.processor.pause_game()
                 if event.key == pg.K_x:
+                    self.puppet.set_state(State.jabbing)
+                if event.key == pg.K_q:
                     self.puppet.kill()
+
                 if event.key == pg.K_RIGHT:
-                    self.handle_double_tap()
-                    self.puppet.direction = 1
+                    self.handle_double_tap(pg.K_RIGHT)
                 if event.key == pg.K_LEFT:
-                    self.handle_double_tap()
-                    self.puppet.direction = -1
+                    self.handle_double_tap(pg.K_LEFT)
 
         # pressed keys
-        pressed_keys = pg.key.get_pressed()
-        self.puppet.movement_vector = Controller.get_distance_from_keys_pressed(pressed_keys)
-        self.puppet.is_crouching = Controller.is_crouching(pressed_keys)
+        if not self.puppet.state == State.dashing:
+            pressed_keys = pg.key.get_pressed()
+            self.puppet.direction = Controller.get_direction_from_pressed_keys(pressed_keys)
+            if pressed_keys[pg.K_RIGHT]:
+                self.puppet.set_state(State.walking)
+            elif pressed_keys[pg.K_LEFT]:
+                self.puppet.set_state(State.walking_back)
+            else:
+                self.puppet.set_state(State.idle)
+            if pressed_keys[pg.K_DOWN]:
+                self.puppet.set_state(State.ducking)
 
-    def handle_double_tap(self):
-        if self.puppet.dash_timer > 0 and self.can_double_tap:
+    def handle_double_tap(self, key):
+        if self.puppet.dash_timer > 0 and self.key_buffer == key:
             self.puppet.set_dashing()
-            self.can_double_tap = False
+            self.puppet.direction = Controller.get_direction_from_tapped_key(key)
+            self.puppet.set_state(State.dashing)
+            self.key_buffer = None
         else:
-            self.can_double_tap = True
-            self.puppet.set_dash_timer(cfg.DOUBLE_TAP_DURATION)
+            self.key_buffer = key
+            if not self.puppet.state == State.dashing:
+                self.puppet.set_dash_timer(cfg.DOUBLE_TAP_DURATION)
 
     @staticmethod
-    def is_crouching(pressed_keys):
-        if pressed_keys[pg.K_DOWN]:
-            return True
+    def get_direction_from_tapped_key(key):
+        if key == pg.K_LEFT:
+            return -1
+        elif key == pg.K_RIGHT:
+            return 1
         else:
-            return False
+            return 0
 
     @staticmethod
-    def get_distance_from_keys_pressed(pressed_keys):
-        speed = cfg.MOVE_SPEED
+    def get_direction_from_pressed_keys(pressed_keys):
         if pressed_keys[pg.K_LEFT]:
-            return -speed
-
+            return -1
         elif pressed_keys[pg.K_RIGHT]:
-            return speed
+            return 1
         else:
             return 0

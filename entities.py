@@ -1,43 +1,73 @@
 import cfg
 import pygame as pg
+import UI
+from renderer import Renderer
+from cfg import State
 
 
 class Movable(pg.sprite.Sprite):
     instances = list()
 
-    @staticmethod
-    def prepare_image(image, dimensions=cfg.FIGHTER_SIZE):
-        try:
-            img = pg.image.load("resources/sprites/"+image).convert()
-            img.set_colorkey("WHITE")
-            return pg.transform.scale(img, dimensions)
-        except FileNotFoundError:
-            return pg.image.load("resources/sprites/no_sprite.png").convert()
-
-    def __init__(self, position, sprite, dimensions=cfg.FIGHTER_SIZE):
+    def __init__(self, position, sprite="no_sprite.png", dimensions=cfg.FIGHTER_SIZE):
         pg.sprite.Sprite.__init__(self)
+        self.renderer = Renderer(self)
+        self.state = State.idle
+        self.state_timer = 0
         self.image_name = sprite
-        self.image = Movable.prepare_image(sprite, dimensions)
+        self.image = UI.prepare_image(sprite, dimensions)
         self.rect = self.image.get_rect(bottomleft=position)
+
         self.movement_vector = 0
-        self.is_dashing = False
         self.dash_timer = 0
+        self.dash_cooldown = 0
         self.direction = 1
 
     def set_dash_timer(self, time):
         self.dash_timer = time
 
     def set_dashing(self):
-        self.dash_timer = cfg.DASH_TIME
-        self.is_dashing = True
+        if self.dash_cooldown == 0:
+            self.dash_timer = cfg.DASH_TIME
+            self.dash_cooldown = cfg.DASH_TIME + cfg.DASH_COOLDOWN
+
+    def manage_dashing(self):
+        self.dash_timer_tick()
+        if self.state == State.dashing:
+            self.movement_vector *= cfg.DASH_MULTIPLIER
+
+    def manage_ducking(self):
+        if self.state == State.ducking:
+            self.movement_vector /= 2
+
+    def manage_idling(self):
+        if self.movement_vector == 0 and self.state != State.ducking:
+            self.set_state(State.idle)
+
+    def dash_timer_tick(self):
+        if self.dash_cooldown > 0:
+            self.dash_cooldown -= 1
+        if self.dash_timer > 0:
+            self.dash_timer -= 1
+        elif self.state == State.dashing:
+            self.set_state(State.idle)
 
     def update(self, *args, **kwargs) -> None:
+        if self.state_timer > 0:
+            self.state_timer -= 1
+        self.movement_vector = cfg.MOVE_SPEED * self.direction
+        self.manage_idling()
+        self.manage_ducking()
+        self.manage_dashing()
         self.rect.x += self.movement_vector
+        self.image = self.renderer.render_frame()
+        self.rect = self.image.get_rect(bottomleft=(self.rect.x, cfg.FLOOR))
 
-
-class Status:
-    def __init__(self, name):
-        self.name = name
+    def set_state(self, state):
+        if self.state != state and self.state_timer == 0:
+            if state == State.jabbing:
+                self.state_timer = cfg.JAB_DURATION
+            self.state = state
+            self.renderer.update()
 
 
 class Living(Movable):
@@ -46,47 +76,9 @@ class Living(Movable):
         self.health = hp
         self.stamina = 100
         self.balance = 100
-        self.is_crouching = False
         self.damage_modifier = 1
         self.statuses = set()
         Movable.instances.append(self)
 
     def update(self, *args, **kwargs) -> None:
-        self.dash_timer_tick()
-
-        if self.is_dashing:
-            if self.is_crouching:
-                self.movement_vector = cfg.MOVE_SPEED * self.direction * 1.5
-            else:
-                self.movement_vector = cfg.MOVE_SPEED * self.direction * 2.5
-            Movable.update(self)
-            return
-
-        if self.is_crouching:
-            if self.image_name != "ducked.png":
-                self.image_name = "ducked.png"
-                height = cfg.FIGHTER_SIZE[1] // 1.5
-                self.image = super(Living, self).prepare_image("ducked.png", (cfg.FIGHTER_SIZE[0], int(height)))
-                self.rect = self.image.get_rect(bottomleft=(self.rect.x, cfg.FLOOR))
-            self.movement_vector //= 2
-
-        elif self.image_name != "right_stance.png":
-            self.image_name = "right_stance.png"
-            self.image = super(Living, self).prepare_image("right_stance.png", cfg.FIGHTER_SIZE)
-            self.rect = self.image.get_rect(bottomleft=(self.rect.x, cfg.FLOOR))
-
-        Movable.update(self)
-
-    def dash_timer_tick(self):
-        if self.dash_timer > 0:
-            self.dash_timer -= 1
-        elif self.is_dashing:
-            self.is_dashing = False
-
-
-class Player(Living):
-    pass
-
-
-class Enemy(Living):
-    pass
+        super(Living, self).update(self)

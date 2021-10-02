@@ -1,25 +1,21 @@
-from pygame.surface import Surface
-
 import cfg
 import entities
 import player_input as pinput
 import pygame as pg
 import UI
-import random
 from menus import Menu_Renderer as Menu
-from enemy_spawn import clear_board
 
 
 def start_game_cycle(processor):
 
     if not processor.can_continue:
-        player = entities.Living((cfg.DISPLAY_X // 4.5, cfg.FLOOR), sprite="right_stance.png")
+        player = entities.Living((cfg.DISPLAY_X // 4.5, cfg.FLOOR))
         player.image.set_colorkey("WHITE")
         player_group = pg.sprite.Group()
         player_group.add(player)
         controller = pinput.Controller(player, processor)
 
-    background_shape = pg.surface.Surface((cfg.DISPLAY_X, cfg.FLOOR // 1.5))
+    background_shape = pg.surface.Surface((cfg.DISPLAY_X, cfg.FLOOR // 1.6))
 
     background_shape.fill("YELLOW")
     processor.main_surface.fill("BLACK")
@@ -29,7 +25,7 @@ def start_game_cycle(processor):
 
         processor.main_surface.fill("BLACK")
         processor.main_surface.blit(background_shape, (0, cfg.FLOOR // 2.2))
-        UI.draw_text(processor.main_surface, player.is_dashing, player.dash_timer)
+        UI.draw_text(processor.main_surface, "fighting game pre-pre-pre-alpha v0.0000000000000000000000000001")
 
         controller.handle_events()
         player_group.update()

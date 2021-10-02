@@ -2,19 +2,24 @@ import cfg
 import pygame as pg
 
 
+def prepare_image(image, dimensions=cfg.FIGHTER_SIZE):
+    try:
+        img = pg.image.load("resources/sprites/" + image).convert()
+        img.set_colorkey("WHITE")
+        return pg.transform.scale(img, dimensions)
+    except FileNotFoundError:
+        return pg.image.load("resources/sprites/no_sprite.png").convert()
+
+
 def draw_text(surface, *args):
-    small_impact_font = pg.font.SysFont('Arial', 60)
+    small_impact_font = pg.font.SysFont('Arial', 20)
 
     text = ''
     for arg in args:
         text += str(arg) + '        '
     player_hp_text = small_impact_font.render(str(text), 1, "WHITE")
-    player_hp_pos = player_hp_text.get_rect(topleft=(100, cfg.FLOOR // 3.1))
+    player_hp_pos = player_hp_text.get_rect(topleft=(20, 20))
     surface.blit(player_hp_text, player_hp_pos)
-
-    # enemy_hp_text = small_impact_font.render(str(enemy_hp), 1, "WHITE")
-    # enemy_hp_pos = enemy_hp_text.get_rect(topright=(cfg.DISPLAY_X - 100, 40))
-    # surface.blit(enemy_hp_text, enemy_hp_pos)
 
 
 def draw_fighting_image_on(surface):
