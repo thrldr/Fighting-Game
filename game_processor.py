@@ -1,9 +1,18 @@
 import game_states as gc
 import pygame as pg
 import constants as cfg
+from enum import Enum
 
 
+# to do: switch game processor states implementation from plain strings to enum
 class Game_Processor:
+    class State(Enum):
+        idle = 0
+        main_menu = 1
+        victory = 2
+        defeat = 3
+        gameplay = 4
+
     def __init__(self, state="idle"):
         Game_Processor.check_if_valid_state(state)
         self.continue_loop = True

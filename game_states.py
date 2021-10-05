@@ -3,17 +3,23 @@ import entities
 import player_input as pinput
 import pygame as pg
 import UI
+from states import State
 from menus import Menu_Renderer as Menu
 
 
 def start_game_cycle(processor):
 
     if not processor.can_continue:
-        player = entities.Living((cfg.DISPLAY_X // 4.5, cfg.FLOOR))
-        player.image.set_colorkey("WHITE")
-        player_group = pg.sprite.Group()
-        player_group.add(player)
-        controller = pinput.Controller(player, processor)
+        State.initialize_states()
+        player = entities.Living(cfg.PLAYER_STARTING_POS)
+        player.renderer.load_fighter_animations()
+        enemy = entities.Living(cfg.ENEMY_STARTING_POS, direction=-1)
+        enemy.renderer.load_fighter_animations()
+        fighters = pg.sprite.Group()
+        fighters.add(player)
+        fighters.add(enemy)
+
+    controller = pinput.Controller(player, processor)
 
     background_shape = pg.surface.Surface((cfg.DISPLAY_X, cfg.FLOOR // 1.6))
 
@@ -21,15 +27,27 @@ def start_game_cycle(processor):
     processor.main_surface.fill("BLACK")
     pg.display.update()
 
+    collision_shape = pg.surface.Surface((55, 55))
+    collision_hand = pg.surface.Surface(cfg.HAND_COLLISION_SIZE)
+    test = pg.surface.Surface((500, 500))
+
     while processor.continue_loop:
 
         processor.main_surface.fill("BLACK")
         processor.main_surface.blit(background_shape, (0, cfg.FLOOR // 2.2))
-        UI.draw_text(processor.main_surface, "fighting game pre-pre-pre-alpha v0.0000000000000000000000000001")
+        UI.draw_text(processor.main_surface, enemy.state_timer, enemy.state.key)    # debug text
 
         controller.handle_events()
-        player_group.update()
-        player_group.draw(processor.main_surface)
+        fighters.update()
+        fighters.draw(processor.main_surface)
+
+        collision_shape.fill("RED")
+        test.fill("BLUE")
+        collision_hand.fill(pg.Color(255, 0, 0))
+        collision_hand.set_alpha(150)
+
+        # processor.main_surface.blit(collision_shape, enemy.head_rect)
+        processor.main_surface.blit(collision_hand, player.hand_collision_rect)
 
         processor.clock.tick(cfg.FPS)
         pg.display.update()
